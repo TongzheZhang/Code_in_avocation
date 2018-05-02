@@ -67,13 +67,14 @@ if __name__ == "__main__":
     
     '''参数设定'''
     # 每场比赛赔率值
-    odds = [1.49, 1.86, 1.61, 1.38, 1.32, 1.16, 3.7, 1.57]
+    #odds = [1.49, 1.86, 1.61, 1.38, 1.32, 1.16, 3.7, 1.57]
+    odds = [3, 5, 7]
     # 总共比赛数
     total_match = len(odds)
     # 比赛索引
     idx = list(range(1,total_match+1))
     # 最多预测错几场
-    wrong_match = 2
+    wrong_match = 1
     # 最少几场串
     least_com = 2
     # 单场预测对概率
@@ -81,7 +82,7 @@ if __name__ == "__main__":
     
     '''基本情况输出'''
     print '共有%d种买彩组合，也就是需要%d个系数'%(cal_com(total_match, least_com), cal_com(total_match, least_com))
-    print '共有%d种比赛结果情况'%(2**total_match)
+    print '共有%d种比赛结果情况'%(3**total_match)
     print '共有%d种情况错了两场以内'%cal_situation(total_match, wrong_match)
     for i in range(0, wrong_match+1):
         odd = comb(total_match, i)*(one_odd**(total_match-i))*((1-one_odd)**i)
@@ -92,11 +93,14 @@ if __name__ == "__main__":
     # 得到所有情况的赔率组合
     all_odds = get_all_odds(odds, all_situation)
     
+    #print all_odds
+    
     # 得到所有情况的赔率值
     new_all_odds = get_new_odds_list(all_odds)
     
+    
     '''线性优化部分'''
-    total_money = 10000
+    total_money = 1
     neg_total_money = -total_money
     
     # 目标函数参数
@@ -109,8 +113,8 @@ if __name__ == "__main__":
     b_ub = []
     for i in range(0, int(cal_situation(total_match, wrong_match))):
         b_ub.append(neg_total_money)
-    # 等式参数    
-    A_eq = [ones(247)]
+    # 等式参数  
+    A_eq = [ones(cal_com(total_match, least_com))]
     b_eq = [total_money]
     # 权重范围
     bounds = (0, total_money)
