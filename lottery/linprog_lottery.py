@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Apr 28 14:39:57 2018
-给定一组数，若干个赔率，看怎么买是最合适的
+基本功能：给定一组数，若干个赔率，看怎么买是最合适的
 线性规划参考网址 https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linprog.html
 @author: Richard10ZTZ
 """
