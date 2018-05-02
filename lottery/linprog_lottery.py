@@ -115,7 +115,7 @@ if __name__ == "__main__":
     for i in range(0, int(cal_situation(total_match, wrong_match))):
         b_ub.append(neg_total_money)
     # 等式参数  
-    A_eq = [np.ones(cal_com(total_match, least_com) )]
+    A_eq = [np.ones(cal_com(total_match, least_com))]
     b_eq = [total_money]
     # 权重范围
     bounds = (0, total_money)
