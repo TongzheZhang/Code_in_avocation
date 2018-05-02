@@ -83,7 +83,7 @@ if __name__ == "__main__":
     
     '''基本情况输出'''
     print '共有%d种买彩组合，也就是需要%d个系数'%(cal_com(total_match, least_com), cal_com(total_match, least_com))
-    print '共有%d种比赛结果情况'%(3**total_match)
+    print '共有%d种比赛结果情况'%(2**total_match)
     print '共有%d种情况错了两场以内'%cal_situation(total_match, wrong_match)
     for i in range(0, wrong_match+1):
         odd = comb(total_match, i)*(one_odd**(total_match-i))*((1-one_odd)**i)
@@ -114,6 +114,7 @@ if __name__ == "__main__":
     b_ub = []
     for i in range(0, int(cal_situation(total_match, wrong_match))):
         b_ub.append(neg_total_money)
+        
     # 等式参数  
     A_eq = [np.ones(cal_com(total_match, least_com) )]
     b_eq = [total_money]
