@@ -93,10 +93,10 @@ if __name__ == "__main__":
 
     # 单场预测对概率
     one_odd = 0.85
-    #基本情况输出
+    '''基本情况输出'''
     print '共有%d种买彩组合，也就是需要%d个系数'%(cal_com(total_match, least_com, shedan_num), cal_com(total_match, least_com, shedan_num))
     print '共有%d种比赛结果情况'%(2**total_match)
-    print '共有%d种情况错了两场以内'%cal_situation(total_match, wrong_match, shedan_num)
+    print '共有%d种情况错了两场以内'%cal_situation(total_match, wrong_match, shedan_num)    
     for i in range(0, wrong_match+1):
         odd = comb(total_match-shedan_num, i)*(one_odd**(total_match-shedan_num-i))*((1-one_odd)**i)
         print '错%d场比赛的概率是'%i, odd
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     new_all_odds = get_new_odds_list(all_odds)
     
     
-    #线性优化部分
+    '''线性优化部分'''
     total_money = 1
     neg_total_money = -total_money
     
