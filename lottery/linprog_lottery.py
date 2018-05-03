@@ -18,7 +18,7 @@ def prod(L):
 # 计算出g场比赛共有，多少种彩票组合
 def cal_com(g, least_com, shedan_num):
     total = 0
-    for i in range(least_com - shedan_num , g+1-shedan_num):
+    for i in range(least_com-shedan_num, g+1-shedan_num):
         total += comb(g-shedan_num, i) 
     return total
 
@@ -71,15 +71,24 @@ def get_new_odds_list(all_odds):
         new_all_odds.append(temp_odds_list)
     return new_all_odds
 
+# 计算出组合每种比赛结果的概率
+def cal_com_odds(total_match, shedan_num, one_odd,i):
+    odd = comb(total_match-shedan_num, i)*(one_odd**(total_match-shedan_num-i))*((1-one_odd)**i)
+    return odd
+
+
 if __name__ == "__main__":
     
     '''参数设定'''
     # 每场比赛赔率值
     #odds = [1.49, 1.86, 1.61, 1.38, 1.32, 1.16, 3.7, 1.57]
-    odds = [2,3,5,4]
-    shedan = [0,1]
+    odds = [2,3,5]
+    # 设胆，第0场到第n-1场
+    shedan = [0]
+    
+    
     shedan_num = len(shedan)
-    odds_dan = map(lambda i: odds[i],shedan)
+    odds_dan = map(lambda i: odds[i], shedan)
 
     # 总共比赛数
     total_match = len(odds)
@@ -96,11 +105,10 @@ if __name__ == "__main__":
     '''基本情况输出'''
     print '共有%d种买彩组合，也就是需要%d个系数'%(cal_com(total_match, least_com, shedan_num), cal_com(total_match, least_com, shedan_num))
     print '共有%d种比赛结果情况'%(2**total_match)
-    print '共有%d种情况错了两场以内'%cal_situation(total_match, wrong_match, shedan_num)    
-    for i in range(0, wrong_match+1):
-        odd = comb(total_match-shedan_num, i)*(one_odd**(total_match-shedan_num-i))*((1-one_odd)**i)
-        print '错%d场比赛的概率是'%i, odd
-    all_situation = get_pro_wrong_com(total_match, wrong_match,shedan)
+    print '共有%d种情况错了%d场及以内（胆对）'%(cal_situation(total_match, wrong_match, shedan_num), wrong_match)  
+    for i in range(0, wrong_match+1): 
+        print '错%d场比赛的概率是'%i, cal_com_odds(total_match, shedan_num, one_odd,i)
+    all_situation = get_pro_wrong_com(total_match, wrong_match, shedan)
     print '哪场比赛预测错误:',all_situation, len(all_situation)
     
     # 得到所有情况的赔率组合
