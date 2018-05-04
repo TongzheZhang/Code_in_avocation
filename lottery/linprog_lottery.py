@@ -113,7 +113,7 @@ if __name__ == "__main__":
     # 总共比赛数
     total_match_num = len(odds)
     # 最多预测错几场
-    wrong_match_max = 1
+    wrong_match_max = 2
     # 最少几场串
     least_com = 2
     least_com = max(least_com, shedan_num)
@@ -158,4 +158,3 @@ if __name__ == "__main__":
     print res
     com = cal_all_com(total_match_num, least_com, shedan_num, shedan)
     print com
-  
