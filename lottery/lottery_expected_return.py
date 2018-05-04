@@ -9,6 +9,7 @@ import pandas as pd
 from itertools import combinations
 import numpy as np
 import scipy.stats as st
+import copy
 
 '''
 connect_info = 'mysql+mysqldb://root:@127.0.0.1:3306/zucai?charset=utf8'
@@ -24,18 +25,26 @@ def get_data(sql_cmd):
 
 def data_league(name): #将三年联赛的数据整合起来
     df = []
-    for year in range(15,18):
+    for year in range(18,19):
         sql_cmd = "SELECT * FROM %s"%name+str(year)
         df.append(get_data(sql_cmd))
     return df
     
 #此函数用来计算各队主客场平均进球、失球数。
-def data_analysis(df,name): #df为几届的比赛的数据（3个sheet）
+def data_analysis(df,name): #df为几届的比赛的数据（4个sheet）
+    #将四个表格合并，并以Team为index，进行加和合并。
+    '''
     df_merge1 = pd.merge(df[0],df[1],how ='outer')
-    df_merge = pd.merge(df[2],df_merge1,how ='outer')
-    #df_merge = pd.merge(df[3],df_merge2,how ='outer')
+    df_merge2 = pd.merge(df[2],df_merge1,how ='outer')
+    df_merge = pd.merge(df[3],df_merge2,how ='outer')
 
     df_merge_new = df_merge.groupby(['Team']).sum()
+    '''
+    #仅取今年的联赛数据，并设Team为index
+    df = pd.DataFrame(df[0])
+    df.set_index(["Team"], inplace=True)
+    df_merge_new = copy.copy(df)
+    
     df_merge_new['avg_host_goals_scored'] = df_merge_new['host_goals_scored']/df_merge_new['host_game_num']
     df_merge_new['avg_host_goals_against'] = df_merge_new['host_goals_against']/df_merge_new['host_game_num']              
     df_merge_new['avg_guest_goals_scored'] = df_merge_new['guest_goals_scored']/df_merge_new['guest_game_num']
@@ -141,20 +150,24 @@ def Filter_today_matches(csv):
     Spanish_La_Liga_Matches = today_matches.loc[today_matches['liansai']=='西甲'.decode('utf8')]         
     German_Bundesliga_Matches = today_matches.loc[today_matches['liansai']=='德甲'.decode('utf8')]    
     France_Ligue_one_Matches = today_matches.loc[today_matches['liansai']=='法甲'.decode('utf8')]
+    '''                                             
     K_League_Matches = today_matches.loc[today_matches['liansai']=='K联赛'.decode('utf8')]                                                 
     J_League_Matches = today_matches.loc[today_matches['liansai']=='J联赛'.decode('utf8')]                                                 
     France_Ligue_two_Matches = today_matches.loc[today_matches['liansai']=='法乙'.decode('utf8')]                                                 
-    German_B_Matches = today_matches.loc[today_matches['liansai']=='德甲'.decode('utf8')]                                                 
+    German_B_Matches = today_matches.loc[today_matches['liansai']=='德甲'.decode('utf8')]  
+    '''                                               
                                                  
     English_Premier_League_Matches['liansai'] = 'English_Premier_League'
     Italy_Serie_A_Matches['liansai'] = 'Italy_Serie_A'
     Spanish_La_Liga_Matches['liansai'] = 'Spanish_La_Liga'
     German_Bundesliga_Matches['liansai'] = 'German_Bundesliga'
     France_Ligue_one_Matches['liansai'] = 'France_Ligue_one'
+    '''
     K_League_Matches['liansai'] = 'K_League'
     J_League_Matches['liansai'] = 'J_League'
     France_Ligue_two_Matches['liansai'] = 'France_Ligue_two'
     German_B_Matches['liansai'] = 'German_B'
+    '''
     '''
     today_matches_fiveLeague = English_Premier_League_Matches.append([Italy_Serie_A_Matches,Spanish_La_Liga_Matches,
                                                                       German_Bundesliga_Matches,France_Ligue_one_Matches,
@@ -230,9 +243,6 @@ def profit_expectation(df_score_probability, df_win_lose_probability,today_match
             df_expected_profit_set = pd.DataFrame(expected_profit_set).T
             return df_expected_profit_set
             
-                #total_expected_profit = total_expected_profit + expected_profit
-            #print total_expected_profit
-            #return total_expected_profit
     if mode == 2: #3串1
         if len(today_matches_fiveLeague)<3:
             print('The chosen group is less than expected.')
@@ -276,8 +286,12 @@ def profit_expectation(df_score_probability, df_win_lose_probability,today_match
     '''
     
 if __name__ == "__main__":    
+    '''
     namelist = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga','German_Bundesliga','France_Ligue_one',
     'J_League','K_League','France_Ligue_two','German_B']  
+    '''
+    namelist = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga','German_Bundesliga','France_Ligue_one']
+
     mode = 1
     advantages_index = {}
     mean_host_win = {}
@@ -295,8 +309,8 @@ if __name__ == "__main__":
         advantages_index[name],mean_host_win[name],mean_guest_win[name],hit_lose_ball[name] = data_analysis(df,name)
         expected_host_ball_set[name], expected_guest_ball_set[name] = expected_hitball_number(advantages_index[name],mean_host_win[name],mean_guest_win[name])
         df_score_probability[name], df_win_lose_probability[name] = ballprobability(expected_host_ball_set[name],expected_guest_ball_set[name]) 
-        finished_matches[name] = get_data("SELECT * FROM %s_recent_matches"%name)
-        correct_ratio[name],count[name] = calculate_correct_ratio(finished_matches[name], df_win_lose_probability[name],df_score_probability[name], mode)
+        #finished_matches[name] = get_data("SELECT * FROM %s_recent_matches"%name)
+        #correct_ratio[name],count[name] = calculate_correct_ratio(finished_matches[name], df_win_lose_probability[name],df_score_probability[name], mode)
     today_match_csv = 'C:/Users/Administrator/Desktop/yingchao_season_score/jingcai_today_data.csv'    
     today_matches_fiveLeague = Filter_today_matches(today_match_csv)
     df_expected_profit_set = profit_expectation(df_score_probability, df_win_lose_probability,today_matches_fiveLeague,1)

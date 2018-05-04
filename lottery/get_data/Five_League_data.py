@@ -14,19 +14,25 @@ from sqlalchemy.types import NVARCHAR, Float, Integer
 
 
 driver = webdriver.PhantomJS(executable_path = 'D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe')    
-urllist_set = [["http://www.okooo.com/soccer/league/17/schedule/12651/",
+'''
+urllist_set = [["http://www.okooo.com/soccer/league/17/schedule/13222/",
+    "http://www.okooo.com/soccer/league/17/schedule/12651/",
     "http://www.okooo.com/soccer/league/17/schedule/12084/",
     "http://www.okooo.com/soccer/league/17/schedule/8186/"],
-    ["http://www.okooo.com/soccer/league/23/schedule/12786/",
+    ["http://www.okooo.com/soccer/league/23/schedule/13347/",
+    "http://www.okooo.com/soccer/league/23/schedule/12786/",
     "http://www.okooo.com/soccer/league/23/schedule/12257/",
     "http://www.okooo.com/soccer/league/23/schedule/8618/"],
-    ["http://www.okooo.com/soccer/league/8/schedule/12749/",
+    ["http://www.okooo.com/soccer/league/8/schedule/13342/",
+    "http://www.okooo.com/soccer/league/8/schedule/12749/",
     "http://www.okooo.com/soccer/league/8/schedule/12176/",
     "http://www.okooo.com/soccer/league/8/schedule/8578/"],
-    ["http://www.okooo.com/soccer/league/35/schedule/12694/1/",
+    ["http://www.okooo.com/soccer/league/35/schedule/13262/",
+    "http://www.okooo.com/soccer/league/35/schedule/12694/1/",
     "http://www.okooo.com/soccer/league/35/schedule/12137/1/",
     "http://www.okooo.com/soccer/league/35/schedule/8238/1/"],
-    ["http://www.okooo.com/soccer/league/34/schedule/12639/1/",
+    ["http://www.okooo.com/soccer/league/34/schedule/13224/",
+    "http://www.okooo.com/soccer/league/34/schedule/12639/1/",
      "http://www.okooo.com/soccer/league/34/schedule/12095/",
      "http://www.okooo.com/soccer/league/34/schedule/8122/"],
     ["http://www.okooo.com/soccer/league/196/schedule/13046/",
@@ -41,11 +47,36 @@ urllist_set = [["http://www.okooo.com/soccer/league/17/schedule/12651/",
     ["http://www.okooo.com/soccer/league/44/schedule/12695/1/",
      "http://www.okooo.com/soccer/league/44/schedule/12136/1/",
      "http://www.okooo.com/soccer/league/44/schedule/8240/1/"]]
+'''
+urllist_set = [["http://www.okooo.com/soccer/league/17/schedule/13222/",
+    "http://www.okooo.com/soccer/league/17/schedule/12651/",
+    "http://www.okooo.com/soccer/league/17/schedule/12084/",
+    "http://www.okooo.com/soccer/league/17/schedule/8186/"],
+    ["http://www.okooo.com/soccer/league/23/schedule/13347/",
+    "http://www.okooo.com/soccer/league/23/schedule/12786/",
+    "http://www.okooo.com/soccer/league/23/schedule/12257/",
+    "http://www.okooo.com/soccer/league/23/schedule/8618/"],
+    ["http://www.okooo.com/soccer/league/8/schedule/13342/",
+    "http://www.okooo.com/soccer/league/8/schedule/12749/",
+    "http://www.okooo.com/soccer/league/8/schedule/12176/",
+    "http://www.okooo.com/soccer/league/8/schedule/8578/"],
+    ["http://www.okooo.com/soccer/league/35/schedule/13262/",
+    "http://www.okooo.com/soccer/league/35/schedule/12694/1/",
+    "http://www.okooo.com/soccer/league/35/schedule/12137/1/",
+    "http://www.okooo.com/soccer/league/35/schedule/8238/1/"],
+    ["http://www.okooo.com/soccer/league/34/schedule/13224/",
+    "http://www.okooo.com/soccer/league/34/schedule/12639/1/",
+     "http://www.okooo.com/soccer/league/34/schedule/12095/",
+     "http://www.okooo.com/soccer/league/34/schedule/8122/"]]
+'''     
 name = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga',
 'German_Bundesliga','France_Ligue_one','J_League','K_League','France_Ligue_two','German_B']    
+'''
+name = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga',
+'German_Bundesliga','France_Ligue_one']    
 
 for j in range(len(urllist_set)):
-    year = 17
+    year = 18
     urllist = urllist_set[j]
     for url in urllist:      
         driver.get(url)
