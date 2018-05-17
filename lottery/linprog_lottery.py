@@ -51,8 +51,10 @@ def cal_potn_wrong_situation(total_match_num, wrong_match, shedan):
     # 可能错的场次idx
     for x in shedan:
         idx.remove(x)
-    #for i, x in enumerate(shedan):
-    #    idx.pop(x-i)
+    '''
+    for i, x in enumerate(shedan):
+        idx.pop(x-i)
+    '''
     # 可能错的场次组合
     for i in range(0, wrong_match+1):
         return_list += list(combinations(idx, i)) 
@@ -105,15 +107,16 @@ if __name__ == "__main__":
     '''参数设定'''
     # 每场比赛赔率值
     #odds = [1.49, 1.86, 1.61, 1.38, 1.32, 1.16, 3.7, 1.57]
-    odds = [2,3,5]
+    odds = [1.35, 2.68, 1.21, 1.48]
+    #odds = [2,3,5]
     # 设胆，第0场到第n-1场，请按数字从小到大输入
-    shedan = [1]
+    shedan = []
     shedan_num = len(shedan)
     odds_dan = map(lambda i: odds[i], shedan)
     # 总共比赛数
     total_match_num = len(odds)
     # 最多预测错几场
-    wrong_match_max = 2
+    wrong_match_max = 1
     # 最少几场串
     least_com = 2
     least_com = max(least_com, shedan_num)
@@ -121,7 +124,7 @@ if __name__ == "__main__":
     one_odd = 0.85
     
     '''基本情况输出'''
-    print '共%d场比赛，第%d场为胆，最少串%d场，最多预测错%d场'%(total_match_num, reduce(lambda x, y: str(x)+'&'+str(y), shedan), least_com, wrong_match_max)
+    #print '共%d场比赛，第%s场为胆，最少串%d场，最多预测错%d场'%(total_match_num, reduce(lambda x, y: str(x)+'&'+str(y), shedan), least_com, wrong_match_max)
     print '共有%d种买彩组合，也就是需要%d个系数'%(cal_com_num(total_match_num, least_com, shedan_num), cal_com_num(total_match_num, least_com, shedan_num))
     print '共有%d种比赛结果情况'%(2**total_match_num)
     print '共有%d种情况错了%d场及以内（胆对）'%(cal_situation_num(total_match_num, wrong_match_max, shedan_num), wrong_match_max)  
@@ -134,8 +137,9 @@ if __name__ == "__main__":
     all_odds = cal_all_situation_odds_com(odds, all_situation, shedan, least_com)
     # 得到所有情况的组合赔率值
     all_odds_new = cal_all_situation_odds(all_odds)
-    
-    '''线性优化部分'''
+  
+    #线性优化部分
+
     total_money = 1
     total_money_neg = -total_money
     # 目标函数参数

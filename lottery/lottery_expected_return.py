@@ -25,7 +25,7 @@ def get_data(sql_cmd):
 
 def data_league(name): #将三年联赛的数据整合起来
     df = []
-    for year in range(18,19):
+    for year in range(17,18):
         sql_cmd = "SELECT * FROM %s"%name+str(year)
         df.append(get_data(sql_cmd))
     return df
@@ -290,7 +290,7 @@ if __name__ == "__main__":
     namelist = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga','German_Bundesliga','France_Ligue_one',
     'J_League','K_League','France_Ligue_two','German_B']  
     '''
-    namelist = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga','German_Bundesliga','France_Ligue_one']
+    namelist = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga','German_Bundesliga','France_Ligue_one','Japanese']
 
     mode = 1
     advantages_index = {}
@@ -309,14 +309,8 @@ if __name__ == "__main__":
         advantages_index[name],mean_host_win[name],mean_guest_win[name],hit_lose_ball[name] = data_analysis(df,name)
         expected_host_ball_set[name], expected_guest_ball_set[name] = expected_hitball_number(advantages_index[name],mean_host_win[name],mean_guest_win[name])
         df_score_probability[name], df_win_lose_probability[name] = ballprobability(expected_host_ball_set[name],expected_guest_ball_set[name]) 
-        #finished_matches[name] = get_data("SELECT * FROM %s_recent_matches"%name)
-        #correct_ratio[name],count[name] = calculate_correct_ratio(finished_matches[name], df_win_lose_probability[name],df_score_probability[name], mode)
-    today_match_csv = 'C:/Users/Administrator/Desktop/yingchao_season_score/jingcai_today_data.csv'    
-    today_matches_fiveLeague = Filter_today_matches(today_match_csv)
-    df_expected_profit_set = profit_expectation(df_score_probability, df_win_lose_probability,today_matches_fiveLeague,1)
-    '''
-    weights = []
-    for i in range(len(df_expected_profit_set)):
-        weights.append(1/df_expected_profit_set['peilv'].ix[i])
-    print weights
-    '''
+        finished_matches[name] = get_data("SELECT * FROM %s_recent_matches"%name)
+        correct_ratio[name],count[name] = calculate_correct_ratio(finished_matches[name], df_win_lose_probability[name],df_score_probability[name], mode)
+    #today_match_csv = 'C:/Users/Administrator/Desktop/yingchao_season_score/jingcai_today_data.csv'    
+    #today_matches_fiveLeague = Filter_today_matches(today_match_csv)
+    #df_expected_profit_set = profit_expectation(df_score_probability, df_win_lose_probability,today_matches_fiveLeague,1)
