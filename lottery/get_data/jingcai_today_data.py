@@ -11,6 +11,8 @@ import pandas as pd
 import re
 from sqlalchemy import create_engine 
 from sqlalchemy.types import NVARCHAR, Float, Integer
+import json
+
 
 driver = webdriver.PhantomJS(executable_path = 'D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe')
 url = "http://www.okooo.com/jingcai/"
@@ -25,6 +27,7 @@ for j,table in enumerate(table_set):
     s = {}
     #print table
     #s['host'] = table.findAll('div',{'class':'zhum fff hui_colo'})
+    s['match_num'] = table['data-mid']
     liansai = table.select('.saiming.aochao')
     s['liansai'] = liansai[0].text
     team = table.select('div .zhum.fff.hui_colo ')
@@ -58,43 +61,43 @@ for j,table in enumerate(table_set):
             s['danguan'] = 'danguan'
     except IndexError:
         pass
+    
+    #根据matchID爬取初赔(bet365)
+    url_startodds = 'http://www.okooo.com/I/?method=lottery.match.oddschangeline&pid=27&limit=3&isReversion=N&matchId=%s&format=json&bid=1'%s['match_num']
+    driver.get(url_startodds)
+    pageSource = driver.page_source
+    html_parse = BeautifulSoup(pageSource)
+    a = html_parse.text
+    
+    text = json.loads(a)
+    b = text['match_oddschangeline_response']
+    c = b['oddsList']    
+    startOdds = c['start']['odds']
+    s['startOdds_bet365_win'] = startOdds[0]
+    s['startOdds_bet365_draw'] = startOdds[1]
+    s['startOdds_bet365_lose'] = startOdds[2]
+    
+    #根据matchID爬取初赔(libo)
+    url_startodds = 'http://www.okooo.com/I/?method=lottery.match.oddschangeline&pid=82&limit=3&isReversion=N&matchId=%s&format=json&bid=1'%s['match_num']
+    driver.get(url_startodds) 
+    pageSource = driver.page_source
+    html_parse = BeautifulSoup(pageSource)
+    a = html_parse.text   
+    text = json.loads(a)
+    b = text['match_oddschangeline_response']
+    c = b['oddsList']    
+    try:
+        startOdds = c['start']['odds']
+        s['startOdds_libo_win'] = startOdds[0]
+        s['startOdds_libo_draw'] = startOdds[1]
+        s['startOdds_libo_lose'] = startOdds[2]
+    except TypeError:
+        pass
+
     symbols[j] = s
 df_symbols = pd.DataFrame(symbols).T
 df_symbols.to_csv('C:/Users/Administrator/Desktop/yingchao_season_score/jingcai_today_data.csv',encoding='gbk')
 
 
+
       
-
-'''
-    div = table.select('div')
-    p = table.select('p class')
-    s['liansai'] = p[0].text
-    s['host'] = div[8].text
-    s['host_score'] = div[9].text
-
-'''
-'''
-    p = table.select('p')
-    s['liansai'] = p[0].text
-    symbols[j] = s
-    j = j+1
-print symbols       
-'''             
-'''
-        symbolslist = table.select('tr')[1:]
-        for symbol in symbolslist:
-            tds = symbol.select('td')
-            s = {}
-            
-            s['time'] = tds[0].text  # Time
-            s['round'] = tds[1].text  # 第几轮    
-            s['host'] = tds[2].text  # Host
-            s['score'] = tds[3].text  # 比分            
-            s['guest'] = tds[4].text  # Guest
-            s['chupei_win'] = tds[5].text  # 赔率
-            s['chupei_draw'] = tds[6].text  # 赔率
-            s['chupei_lose'] = tds[7].text  # 赔率     
-            #symbols[i + (pagenumber - 1)*len(symbolslist)] = s
-            symbols[j] = s
-            j = j + 1           
-'''

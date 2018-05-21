@@ -83,6 +83,16 @@ def cal_all_situation_odds(all_odds):
         new_all_odds.append(temp_odds_list)
     return new_all_odds
 
+# 得到所有可能的情况所有期望值,赔率*概率
+def cal_all_situation_exp(all_odds,one_odd):
+    new_all_exp = []
+    for i in all_odds:
+        temp_exp_list = []
+        for j in i:
+            temp_exp_list.append(prod(j)*pow(one_odd,len(j)))        
+        new_all_exp.append(temp_exp_list)
+    return new_all_exp
+
 # 计算出组合每种比赛结果的概率
 def cal_com_odds(total_match_num, shedan_num, one_odd, wrong_match_num):
     odd = comb(total_match_num-shedan_num, wrong_match_num)*(one_odd**(total_match_num-shedan_num-wrong_match_num))*((1-one_odd)**wrong_match_num)
@@ -107,7 +117,8 @@ if __name__ == "__main__":
     '''参数设定'''
     # 每场比赛赔率值
     #odds = [1.49, 1.86, 1.61, 1.38, 1.32, 1.16, 3.7, 1.57]
-    odds = [1.35, 2.68, 1.21, 1.48]
+    #odds = [1.50, 1.39, 1.47, 1.63]
+    odds = [1.50, 2, 1.47, 1.63]
     #odds = [2,3,5]
     # 设胆，第0场到第n-1场，请按数字从小到大输入
     shedan = []
@@ -135,15 +146,19 @@ if __name__ == "__main__":
     
     # 得到所有情况的赔率组合
     all_odds = cal_all_situation_odds_com(odds, all_situation, shedan, least_com)
+    #print all_odds
     # 得到所有情况的组合赔率值
     all_odds_new = cal_all_situation_odds(all_odds)
-  
+    print all_odds_new
+    
+    all_exp_new = cal_all_situation_exp(all_odds,one_odd)
+    print all_exp_new
     #线性优化部分
 
     total_money = 1
     total_money_neg = -total_money
     # 目标函数参数
-    aim_para = map(sum,zip(*all_odds_new))
+    aim_para = map(sum,zip(*all_exp_new))
     c = map(lambda x: -x, aim_para)
     # 上限参数
     A_ub = []

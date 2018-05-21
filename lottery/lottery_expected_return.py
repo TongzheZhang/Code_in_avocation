@@ -25,7 +25,7 @@ def get_data(sql_cmd):
 
 def data_league(name): #将三年联赛的数据整合起来
     df = []
-    for year in range(17,18):
+    for year in range(18,19):
         sql_cmd = "SELECT * FROM %s"%name+str(year)
         df.append(get_data(sql_cmd))
     return df
@@ -311,6 +311,6 @@ if __name__ == "__main__":
         df_score_probability[name], df_win_lose_probability[name] = ballprobability(expected_host_ball_set[name],expected_guest_ball_set[name]) 
         finished_matches[name] = get_data("SELECT * FROM %s_recent_matches"%name)
         correct_ratio[name],count[name] = calculate_correct_ratio(finished_matches[name], df_win_lose_probability[name],df_score_probability[name], mode)
-    #today_match_csv = 'C:/Users/Administrator/Desktop/yingchao_season_score/jingcai_today_data.csv'    
-    #today_matches_fiveLeague = Filter_today_matches(today_match_csv)
-    #df_expected_profit_set = profit_expectation(df_score_probability, df_win_lose_probability,today_matches_fiveLeague,1)
+    today_match_csv = 'C:/Users/Administrator/Desktop/yingchao_season_score/jingcai_today_data_new.csv'    
+    today_matches_fiveLeague = Filter_today_matches(today_match_csv)
+    df_expected_profit_set = profit_expectation(df_score_probability, df_win_lose_probability,today_matches_fiveLeague,1)
