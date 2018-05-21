@@ -149,10 +149,10 @@ if __name__ == "__main__":
     #print all_odds
     # 得到所有情况的组合赔率值
     all_odds_new = cal_all_situation_odds(all_odds)
-    print all_odds_new
+    #print all_odds_new
     
     all_exp_new = cal_all_situation_exp(all_odds,one_odd)
-    print all_exp_new
+    #print all_exp_new
     #线性优化部分
 
     total_money = 1
