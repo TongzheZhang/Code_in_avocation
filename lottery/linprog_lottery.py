@@ -137,12 +137,12 @@ if __name__ == "__main__":
     least_com = 2
     least_com = max(least_com, shedan_num)
     # 单场预测对概率，通用概率和实际概率list
-    one_prob = 0.85
-    all_prob = np.ones(total_match_num)*0.85
+    one_prob = 0.80
+    all_prob = np.ones(total_match_num)*0.8
     
     '''基本情况输出'''
     print '----------基本情况输出----------'
-    print '', all_prob
+    print '每场比赛预测对的概率', all_prob
     if shedan == []:
         print '共%d场比赛，无胆，最少串%d场，最多预测错%d场'%(total_match_num, least_com, wrong_match_max)
     else:
@@ -170,6 +170,7 @@ if __name__ == "__main__":
     print 
     # 
     all_exp_new = cal_all_situation_exp(all_odds_new, all_situation_prob)
+    print '期望赔率乘积'
     print all_exp_new
     print 
     
