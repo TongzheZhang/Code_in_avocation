@@ -44,8 +44,9 @@ def cal_situation_num(total_match_num, wrong_match, shedan_num):
     return total
 
 # 在已知总场数，最多预测错场数的情况下，得到所有的可能性，用错场idx表示
-def cal_potn_wrong_situation(total_match_num, wrong_match, shedan):
+def cal_potn_wrong_situation(total_match_num, wrong_match, shedan, all_prob):
     return_list = []
+    all_situation_prob = []
     # 所有比赛索引
     idx = list(range(0, total_match_num))
     # 可能错的场次idx
@@ -57,8 +58,14 @@ def cal_potn_wrong_situation(total_match_num, wrong_match, shedan):
     '''
     # 可能错的场次组合
     for i in range(0, wrong_match+1):
-        return_list += list(combinations(idx, i)) 
-    return return_list
+        return_list += list(combinations(idx, i))
+    for wrong_match in return_list:
+        temp_all_prob = all_prob.copy()
+        for i in wrong_match:
+            temp_all_prob[i] = 1 - temp_all_prob[i]
+        print wrong_match, temp_all_prob, prod(temp_all_prob)
+        all_situation_prob.append(prod(temp_all_prob))
+    return return_list, all_situation_prob
 
 # 得到所有可能的情况所有赔率组合表
 def cal_all_situation_odds_com(odds, all_situation ,shedan, least_com):
@@ -84,18 +91,15 @@ def cal_all_situation_odds(all_odds):
     return new_all_odds
 
 # 得到所有可能的情况所有期望值,赔率*概率
-def cal_all_situation_exp(all_odds,one_odd):
+def cal_all_situation_exp(all_odds_new, all_situation_prob):
     new_all_exp = []
-    for i in all_odds:
-        temp_exp_list = []
-        for j in i:
-            temp_exp_list.append(prod(j)*pow(one_odd,len(j)))        
-        new_all_exp.append(temp_exp_list)
+    for idx, row in enumerate(all_odds_new):
+        new_all_exp.append(map(lambda x: x*all_situation_prob[idx],row))
     return new_all_exp
 
-# 计算出组合每种比赛结果的概率
-def cal_com_odds(total_match_num, shedan_num, one_odd, wrong_match_num):
-    odd = comb(total_match_num-shedan_num, wrong_match_num)*(one_odd**(total_match_num-shedan_num-wrong_match_num))*((1-one_odd)**wrong_match_num)
+# 利用通用概率，计算出组合每种比赛结果的概率
+def cal_com_odds(total_match_num, shedan_num, one_prob, wrong_match_num):
+    odd = comb(total_match_num-shedan_num, wrong_match_num)*(one_prob**(total_match_num-shedan_num-wrong_match_num))*((1-one_prob)**wrong_match_num)
     return odd
 
 # 计算买彩组合
@@ -131,38 +135,46 @@ if __name__ == "__main__":
     # 最少几场串
     least_com = 2
     least_com = max(least_com, shedan_num)
-    # 单场预测对概率
-    one_odd = 0.85
+    # 单场预测对概率，通用概率和实际概率list
+    one_prob = 0.85
+    all_prob = np.ones(total_match_num)*0.85
     
     '''基本情况输出'''
+    print '----------基本情况输出----------'
+    print '', all_prob
     if shedan == []:
         print '共%d场比赛，无胆，最少串%d场，最多预测错%d场'%(total_match_num, least_com, wrong_match_max)
     else:
-        print '共%d场比赛，第%s场为胆，最少串%d场，最多预测错%d场'%(total_match_num, reduce(lambda x, y: str(x)+'&'+str(y), shedan), least_com, wrong_match_max)
+        print '共%d场比赛，第%s场为胆，最少串%d场，假设最多预测错%d场'%(total_match_num, reduce(lambda x, y: str(x)+'&'+str(y), shedan), least_com, wrong_match_max)
     print '共有%d种买彩组合，也就是需要%d个系数'%(cal_com_num(total_match_num, least_com, shedan_num), cal_com_num(total_match_num, least_com, shedan_num))
     print '共有%d种真实比赛结果情况'%(2**total_match_num)
     print '在假设只错%d场及以内假设下（胆对的情况下），共有%d种情况'%(wrong_match_max, cal_situation_num(total_match_num, wrong_match_max, shedan_num))  
     for i in range(0, wrong_match_max+1): 
-        print '错%d场比赛的概率是'%i, cal_com_odds(total_match_num, shedan_num, one_odd, i)
+        print '正确率概率为同一值错%d场比赛的概率是'%i, cal_com_odds(total_match_num, shedan_num, one_prob, i)
     
     print 
-    all_situation = cal_potn_wrong_situation(total_match_num, wrong_match_max, shedan)
-    print '哪场比赛预测错误:',all_situation
+    print 
     
+    print '哪场比赛预测错误及概率:'
+    all_situation, all_situation_prob = cal_potn_wrong_situation(total_match_num, wrong_match_max, shedan, all_prob)
+    print 
+    print 
     # 得到所有情况的赔率组合
     all_odds = cal_all_situation_odds_com(odds, all_situation, shedan, least_com)
     print '所有情况的赔率组合：', shape(all_odds) #,all_odds
     
     # 得到所有情况的组合赔率值
     all_odds_new = cal_all_situation_odds(all_odds)
-    print '所有情况的组合赔率值：', shape(all_odds_new), all_odds_new
-    
+    print '所有情况的组合赔率值：', shape(all_odds_new)#, '\n', all_odds_new
+    print 
     # 
-    all_exp_new = cal_all_situation_exp(all_odds, one_odd)
+    all_exp_new = cal_all_situation_exp(all_odds_new, all_situation_prob)
     print all_exp_new
+    print 
+    
     
     '''线性优化部分'''
-
+    print '----------资金配置部分----------'
     total_money = 1
     total_money_neg = -total_money
     # 目标函数参数
@@ -182,6 +194,10 @@ if __name__ == "__main__":
     bounds = (0, total_money)
     # 线性规划
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, options={"disp":True})
-    print res
+    #print res
+    print '----------result----------'
     com = cal_all_com(total_match_num, least_com, shedan_num, shedan)
-    print com
+    for idx, combo in enumerate(com):
+        print combo, res['x'][idx]
+        
+    
