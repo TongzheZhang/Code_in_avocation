@@ -121,9 +121,9 @@ if __name__ == "__main__":
     '''参数设定'''
     # 每场比赛赔率值
     #odds = [1.49, 1.86, 1.61, 1.38, 1.32, 1.16, 3.7, 1.57]
-    #odds = [1.50, 1.39, 1.47, 1.63]
+    odds = [1.50, 1.39, 1.47, 1.63]
     #odds = [1.50, 2, 1.47, 1.63]
-    odds = [1.5, 1.5, 1.5, 1.5]
+    #odds = [1.5, 1.5, 1.5, 1.5]
     #odds = [2,3,5]
     # 设胆，第0场到第n-1场，请按数字从小到大输入
     shedan = []
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     
     '''线性优化部分'''
     print '----------资金配置部分----------'
-    print '我们保证每个只错%d场以内的情况期望为正'%wrong_match_max
+    print '保证每个只错%d场以内的情况能回本，在此条件下期望最大'%wrong_match_max
     total_money = 1
     total_money_neg = -total_money
     # 目标函数参数
@@ -198,10 +198,11 @@ if __name__ == "__main__":
     bounds = (0, total_money)
     # 线性规划
     res = linprog(c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, options={"disp":True})
-    #print res
+    
     print '----------result----------'
     com = cal_all_com(total_match_num, least_com, shedan_num, shedan)
     for idx, combo in enumerate(com):
         print combo, res['x'][idx]
+    print '投入%d元期望收入：'%(total_money*1000), -res['fun']*1000
         
     
