@@ -175,18 +175,21 @@ if __name__ == "__main__":
     
     '''线性优化部分'''
     print '----------资金配置部分----------'
+    print '我们保证每个只错%d场以内的情况期望为正'%wrong_match_max
     total_money = 1
     total_money_neg = -total_money
     # 目标函数参数
     aim_para = map(sum,zip(*all_exp_new))
     c = map(lambda x: -x, aim_para)
     # 上限参数
+    
     A_ub = []
     for i in all_odds_new:
        A_ub.append(map(lambda x:-x, i))
     b_ub = []
     for i in range(0, int(cal_situation_num(total_match_num, wrong_match_max, shedan_num))):
         b_ub.append(total_money_neg) 
+        
     # 等式参数  
     A_eq = [np.ones(int(cal_com_num(total_match_num, least_com, shedan_num)))]
     b_eq = [total_money]
