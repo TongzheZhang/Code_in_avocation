@@ -126,7 +126,7 @@ if __name__ == "__main__":
     odds_dan = map(lambda i: odds[i], shedan)
     # 总共比赛数
     total_match_num = len(odds)
-    # 最多预测错几场
+    # 假设最多预测错几场
     wrong_match_max = 1
     # 最少几场串
     least_com = 2
@@ -135,25 +135,33 @@ if __name__ == "__main__":
     one_odd = 0.85
     
     '''基本情况输出'''
-    #print '共%d场比赛，第%s场为胆，最少串%d场，最多预测错%d场'%(total_match_num, reduce(lambda x, y: str(x)+'&'+str(y), shedan), least_com, wrong_match_max)
+    if shedan == []:
+        print '共%d场比赛，无胆，最少串%d场，最多预测错%d场'%(total_match_num, least_com, wrong_match_max)
+    else:
+        print '共%d场比赛，第%s场为胆，最少串%d场，最多预测错%d场'%(total_match_num, reduce(lambda x, y: str(x)+'&'+str(y), shedan), least_com, wrong_match_max)
     print '共有%d种买彩组合，也就是需要%d个系数'%(cal_com_num(total_match_num, least_com, shedan_num), cal_com_num(total_match_num, least_com, shedan_num))
-    print '共有%d种比赛结果情况'%(2**total_match_num)
-    print '共有%d种情况错了%d场及以内（胆对）'%(cal_situation_num(total_match_num, wrong_match_max, shedan_num), wrong_match_max)  
+    print '共有%d种真实比赛结果情况'%(2**total_match_num)
+    print '在假设只错%d场及以内假设下（胆对的情况下），共有%d种情况'%(wrong_match_max, cal_situation_num(total_match_num, wrong_match_max, shedan_num))  
     for i in range(0, wrong_match_max+1): 
         print '错%d场比赛的概率是'%i, cal_com_odds(total_match_num, shedan_num, one_odd, i)
+    
+    print 
     all_situation = cal_potn_wrong_situation(total_match_num, wrong_match_max, shedan)
-    #print '哪场比赛预测错误:',all_situation, len(all_situation)
+    print '哪场比赛预测错误:',all_situation
     
     # 得到所有情况的赔率组合
     all_odds = cal_all_situation_odds_com(odds, all_situation, shedan, least_com)
-    #print all_odds
+    print '所有情况的赔率组合：', shape(all_odds) #,all_odds
+    
     # 得到所有情况的组合赔率值
     all_odds_new = cal_all_situation_odds(all_odds)
-    #print all_odds_new
+    print '所有情况的组合赔率值：', shape(all_odds_new), all_odds_new
     
-    all_exp_new = cal_all_situation_exp(all_odds,one_odd)
-    #print all_exp_new
-    #线性优化部分
+    # 
+    all_exp_new = cal_all_situation_exp(all_odds, one_odd)
+    print all_exp_new
+    
+    '''线性优化部分'''
 
     total_money = 1
     total_money_neg = -total_money
