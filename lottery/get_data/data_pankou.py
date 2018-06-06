@@ -74,7 +74,7 @@ for year in range(2017,2018):
                 
                 data = pd.concat([new_df_symbols,new_df_text],axis = 1)
                 data = data.reset_index(drop=False) #index重新定义
-                data.rename(columns={"index":"num"},inplace = True)
+                data.rename(columns={"index":"num"},inplace = True
                 
                 dtypedict = {
                   'guest': NVARCHAR(length=255),
