@@ -27,6 +27,9 @@ for j,table in enumerate(table_set):
     s = {}
     #print table
     #s['host'] = table.findAll('div',{'class':'zhum fff hui_colo'})
+    s['ID'] = table.select('span')[0].text
+    s['time'] = table.select('span')[0]['title']
+
     s['match_num'] = table['data-mid']
     liansai = table.select('.saiming.aochao')
     s['liansai'] = liansai[0].text

@@ -121,7 +121,8 @@ if __name__ == "__main__":
     '''参数设定'''
     # 每场比赛赔率值
     #odds = [1.49, 1.86, 1.61, 1.38, 1.32, 1.16, 3.7, 1.57]
-    odds = [1.50, 1.39, 1.47, 1.63]
+    odds = [1.28, 1.5, 2.8, 1.9]
+    matchList = ['001','002','003','004']
     #odds = [1.50, 2, 1.47, 1.63]
     #odds = [1.5, 1.5, 1.5, 1.5]
     #odds = [2,3,5]
@@ -134,10 +135,10 @@ if __name__ == "__main__":
     # 假设最多预测错几场
     wrong_match_max = 1
     # 最少几场串
-    least_com = 2
+    least_com = 1
     least_com = max(least_com, shedan_num)
     # 单场预测对概率，通用概率和实际概率list
-    one_prob = 0.80
+    one_prob = 0.60
     all_prob = np.ones(total_match_num)*0.8
     
     '''基本情况输出'''
@@ -203,7 +204,8 @@ if __name__ == "__main__":
     print '----------result----------'
     com = cal_all_com(total_match_num, least_com, shedan_num, shedan)
     for idx, combo in enumerate(com):
-        print combo, res['x'][idx]
+        #print combo, res['x'][idx]
+        print list(map(lambda x:matchList[x], combo)), res['x'][idx]
     print '投入%d元期望收入：'%(total_money*1000), -res['fun']*1000
         
     

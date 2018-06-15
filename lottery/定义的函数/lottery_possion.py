@@ -1,48 +1,53 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 18 11:07:53 2018
+Created on Tue Jun 12 16:15:52 2018
 
 @author: Administrator
 """
+
 import MySQLdb
 import pandas as pd
 from itertools import combinations
 import numpy as np
 import scipy.stats as st
 import copy
+from sqlalchemy import create_engine
+from sqlalchemy.types import NVARCHAR, Float, Integer
 
-'''
-connect_info = 'mysql+mysqldb://root:@127.0.0.1:3306/zucai?charset=utf8'
-engine = create_engine(connect_info)
-# sql 命令
-df = pd.read_sql(sql=sql_cmd, con=engine)
 
-'''
-
+#从数据库中得到数据
 def get_data(sql_cmd):    
     con = MySQLdb.connect(host='127.0.0.1', user = 'root', passwd = '', db ='zucai', port = 3306, charset = 'utf8', use_unicode=True)
-    df_each_year = pd.read_sql(sql_cmd, con)
-    return df_each_year
-
-def data_league(name): #将三年联赛的数据整合起来
-    df = []
-    for year in range(18,19):
-        sql_cmd = "SELECT * FROM %s"%name+str(year)
-        df.append(get_data(sql_cmd))
+    df = pd.read_sql(sql_cmd, con)
     return df
-    
-#此函数用来计算各队主客场平均进球、失球数。
-def data_analysis(df,name): #df为几届的比赛的数据（4个sheet）
-    #将四个表格合并，并以Team为index，进行加和合并。
-    '''
-    df_merge1 = pd.merge(df[0],df[1],how ='outer')
-    df_merge2 = pd.merge(df[2],df_merge1,how ='outer')
-    df_merge = pd.merge(df[3],df_merge2,how ='outer')
 
-    df_merge_new = df_merge.groupby(['Team']).sum()
-    '''
+#将胜平负概率保存在数据库中
+def save_probability_to_sql(df_probability, name):
+    dtypedict = {
+      'draw': Float(),
+      'lose': Float(),
+      'win': Float()
+    }
+    
+    yconnect = create_engine('mysql+mysqldb://root:@127.0.0.1:3306/zucai?charset=utf8') 
+    pd.io.sql.to_sql(df_probability, name, yconnect, schema='zucai', if_exists='replace',dtype=dtypedict)  
+
+#从数据库中提取出有效内容
+def read_db(table_name, Team):
+    connect=MySQLdb.connect(host='127.0.0.1', db='zucai', user ='root', passwd = '', charset='utf8', use_unicode=False)#指定链接格式为UTF8
+    cursors=connect.cursor() #设定游标
+    cursors.execute(
+        " SELECT * FROM " + table_name + " WHERE CONVERT(`Team` USING utf8) LIKE '%" + Team + "%'")   
+    result = cursors.fetchall()
+    
+    connect.commit() #事务提交  
+    cursors.close()
+    connect.close()
+    return result
+        
+#计算主客队进攻优势和防守优势
+def data_analysis(df): 
     #仅取今年的联赛数据，并设Team为index
-    df = pd.DataFrame(df[0])
     df.set_index(["Team"], inplace=True)
     df_merge_new = copy.copy(df)
     
@@ -60,10 +65,11 @@ def data_analysis(df,name): #df为几届的比赛的数据（4个sheet）
     dataset['主场进攻优势'.decode('utf8')] = df_merge_new['avg_host_goals_scored']/mean_host_win
     dataset['主场防守优势'.decode('utf8')] = df_merge_new['avg_host_goals_against']/mean_host_lose
     data = pd.DataFrame(dataset)     
-    data.to_csv('C:/Users/Administrator/Desktop/yingchao_season_score/%sdata_matrix.csv'%name,encoding='gbk')
-    df_merge_new.to_csv('C:/Users/Administrator/Desktop/yingchao_season_score/%sdata_sum.csv'%name,encoding='gbk')
+    #data.to_csv('C:/Users/Administrator/Desktop/yingchao_season_score/%sdata_matrix.csv'%name,encoding='gbk')
+    df_merge_new.to_csv('C:/Users/Administrator/Desktop/lottery1.csv',encoding='gbk')
     return data,mean_host_win,mean_guest_win,df_merge_new
- 
+
+#计算期望进球数
 def expected_hitball_number(data,mean_host_win,mean_guest_win):
     host_ball_set = {}
     guest_ball_set = {}
@@ -76,10 +82,11 @@ def expected_hitball_number(data,mean_host_win,mean_guest_win):
                 guest_ball_set[data.index[i] + data.index[j]] = guest_ball
     return host_ball_set, guest_ball_set
 
+#计算得到各个比分的概率和胜平负的概率
 def ballprobability(host_ball_set,guest_ball_set):
     score_probability_set = {}
     win_lose_probability_set = {}
-    for k in host_ball_set.keys():
+    for i,k in enumerate(host_ball_set.keys()):
         score_probability = {}
         win_lose_probability = {}
         win_probability = 0
@@ -98,31 +105,35 @@ def ballprobability(host_ball_set,guest_ball_set):
                 if host_scores == guest_scores:
                     draw_probability = draw_probability + probability
             score_probability_set[k] = score_probability
+        win_lose_probability['Team'] = k
         win_lose_probability['win'] = win_probability
         win_lose_probability['draw'] = draw_probability
         win_lose_probability['lose'] = lose_probability
-        win_lose_probability_set[k] = win_lose_probability
-    
+        win_lose_probability_set[i] = win_lose_probability
+
+    cols = ['Team','win','draw','lose']
     df_score_probability = pd.DataFrame(score_probability_set)
     df_win_lose_probability = pd.DataFrame(win_lose_probability_set).T
+    df_win_lose_probability = df_win_lose_probability[cols]
     
-    df_win_lose_probability.to_csv('C:/Users/Administrator/Desktop/yingchao_season_score/win_lose_probability.csv',encoding='gbk')
-    df_score_probability.to_csv('C:/Users/Administrator/Desktop/yingchao_season_score/df_score_probability.csv',encoding='gbk')
     return df_score_probability, df_win_lose_probability
     
+#计算预测正确的概率，finished_matches为测试的比赛
 def calculate_correct_ratio(finished_matches, df_win_lose_probability,df_score_probability, mode):
     if mode == 1: #计算胜平负正确率
         count_correct = 0
         count = 0
         for i, match in enumerate(finished_matches['Team']):
-            try:
-                df_win_lose_probability.loc[match]
-            except KeyError:
-                pass
-            else:
+            len_key = len(df_win_lose_probability.loc[df_win_lose_probability['Team'] == match])
+            if len_key == 1:
                 count = count + 1
-                if np.argmax(df_win_lose_probability.loc[match]) == finished_matches['result'].ix[i]:
+                info = df_win_lose_probability.loc[df_win_lose_probability['Team'] == match]
+                del(info['Team'])
+                info = info.reset_index(drop=True)
+                if np.argmax(info.ix[0]) == finished_matches['result'].ix[i]:
                     count_correct = count_correct + 1
+            else:
+                pass
         correct_ratio = float(count_correct)/count
         
     if mode == 2:  #计算猜比分正确率
@@ -139,73 +150,45 @@ def calculate_correct_ratio(finished_matches, df_win_lose_probability,df_score_p
                     count_correct = count_correct + 1
         correct_ratio = float(count_correct)/count
     return correct_ratio,count
-
-def Filter_today_matches(csv):
-    today_matches =pd.read_csv(csv,header = 0,encoding='gbk')
-    #找出可以投注的比赛
-    today_matches = today_matches.loc[today_matches['score'].isnull() == True]
-    today_matches['Team'] = today_matches['host'] + today_matches['guest']  
-    for match in today_matches:
-        liansai = match['liansai']
-        
-                                       
-    #将五大联赛分开                                
-    English_Premier_League_Matches = today_matches.loc[today_matches['liansai']=='英超'.decode('utf8')]
-    Italy_Serie_A_Matches = today_matches.loc[today_matches['liansai']=='意甲'.decode('utf8')]    
-    Spanish_La_Liga_Matches = today_matches.loc[today_matches['liansai']=='西甲'.decode('utf8')]         
-    German_Bundesliga_Matches = today_matches.loc[today_matches['liansai']=='德甲'.decode('utf8')]    
-    France_Ligue_one_Matches = today_matches.loc[today_matches['liansai']=='法甲'.decode('utf8')]
-    '''                                             
-    K_League_Matches = today_matches.loc[today_matches['liansai']=='K联赛'.decode('utf8')]                                                 
-    J_League_Matches = today_matches.loc[today_matches['liansai']=='J联赛'.decode('utf8')]                                                 
-    France_Ligue_two_Matches = today_matches.loc[today_matches['liansai']=='法乙'.decode('utf8')]                                                 
-    German_B_Matches = today_matches.loc[today_matches['liansai']=='德甲'.decode('utf8')]  
-    '''                                               
-                                                 
-    English_Premier_League_Matches['liansai'] = 'English_Premier_League'
-    Italy_Serie_A_Matches['liansai'] = 'Italy_Serie_A'
-    Spanish_La_Liga_Matches['liansai'] = 'Spanish_La_Liga'
-    German_Bundesliga_Matches['liansai'] = 'German_Bundesliga'
-    France_Ligue_one_Matches['liansai'] = 'France_Ligue_one'
-    '''
-    K_League_Matches['liansai'] = 'K_League'
-    J_League_Matches['liansai'] = 'J_League'
-    France_Ligue_two_Matches['liansai'] = 'France_Ligue_two'
-    German_B_Matches['liansai'] = 'German_B'
-    '''
-    '''
-    today_matches_fiveLeague = English_Premier_League_Matches.append([Italy_Serie_A_Matches,Spanish_La_Liga_Matches,
-                                                                      German_Bundesliga_Matches,France_Ligue_one_Matches,
-                                                                      K_League_Matches,J_League_Matches,France_Ligue_two_Matches,
-                                                                      German_B_Matches])
-    '''
-    today_matches_fiveLeague = English_Premier_League_Matches.append([Italy_Serie_A_Matches,Spanish_La_Liga_Matches,
-                                                                      German_Bundesliga_Matches,France_Ligue_one_Matches])
-                                                                      
-    today_matches_fiveLeague = today_matches_fiveLeague.reset_index(drop=True) #index重新定义
-    df2_set = {}
-    for i in range(len(today_matches_fiveLeague)):
-        df2 = {}
-        try:
-            a = today_matches_fiveLeague['liansai'].ix[i]
-            b = today_matches_fiveLeague['Team'].ix[i]
-            df2['host_win'] = df_win_lose_probability[a]['win'][b]
-            df2['host_draw'] = df_win_lose_probability[a]['draw'][b]
-            df2['host_lose'] = df_win_lose_probability[a]['lose'][b]
-            df2_set[i] = df2
-
-        except KeyError:
-            df2['host_win'] = 'Not Predicted'
-            df2['host_draw'] = 'Not Predicted'
-            df2['host_lose'] = 'Not Predicted'
-            df2_set[i] = df2
-
-    dataframe2 = pd.DataFrame(df2_set).T
-    today_matches_fiveLeague_new = today_matches_fiveLeague.join(dataframe2)
-    today_matches_fiveLeague_new.to_csv('C:/Users/Administrator/Desktop/today_matches_fiveLeague_new.csv',encoding='gbk')
-
-    return today_matches_fiveLeague                    
     
+#统计当日比赛胜平负概率    
+def today_match_prediction(today_matches,year):
+    liansai_list = [u'世界杯',u'英超']
+    table_name_list = ['worldcup','yingchao']
+    prob_set = {}
+    for i in range(len(today_matches)):    
+        prob = {}
+        #在数据库中查找每场比赛的胜平负概率
+        try:
+            loc=liansai_list.index(today_matches.ix[i]['liansai'])
+            table = table_name_list[loc]
+            table_name = table +'_win_lose_probability'+str(year)
+            result = read_db(table_name, today_matches.ix[i]['Team']) 
+            if len(result) > 0:
+                prob['win_prob'] = result[0][2]
+                prob['draw_prob'] = result[0][3]
+                prob['lose_prob'] = result[0][4]
+            else:
+                prob['win_prob'] = 'Not Predicted'
+                prob['draw_prob'] = 'Not Predicted'
+                prob['lose_prob'] = 'Not Predicted'
+        except ValueError:
+            prob['win_prob'] = 'Not Predicted'
+            prob['draw_prob'] = 'Not Predicted'
+            prob['lose_prob'] = 'Not Predicted'
+        
+        prob_set[i] = prob
+    df_prob_set = pd.DataFrame(prob_set).T
+    today_matches_prediction = pd.DataFrame.join(today_matches, df_prob_set)
+    col_left = ['time','host','guest','peilv_win','peilv_draw','peilv_lose','win_prob','draw_prob','lose_prob']
+    today_matches_prediction_new = today_matches_prediction[col_left]
+    today_matches_prediction_new.rename(columns={'time': u'赛事', 'host': u'主队', 'guest': u'客队', 'peilv_win': u'赔率（胜）', 
+                                                 'peilv_draw': u'赔率（平）','peilv_lose': u'赔率（负）','win_prob': u'概率（胜）',
+                                                 'draw_prob': u'概率（平）','lose_prob': u'概率（负）'}, inplace=True) 
+    today_matches_prediction_new.to_csv('C:/Users/Administrator/Desktop/todaymatch_prediction.csv',encoding='gbk')   
+    return today_matches_prediction_new
+     
+#计算2串1、3串1的盈利期望，其中today_matches_fiveLeague为要预测的比赛
 def profit_expectation(df_score_probability, df_win_lose_probability,today_matches_fiveLeague,mode):
     expected_profit_set = {}
     if mode == 1: #2串1
@@ -277,45 +260,3 @@ def profit_expectation(df_score_probability, df_win_lose_probability,today_match
                         print mode, expected_profit, matchgroup1,np.argmax(a),matchgroup2,np.argmax(b),matchgroup3,np.argmax(c)   
                 except KeyError:
                     pass
-                    
-                #total_expected_profit = total_expected_profit + expected_profit
-            #print total_expected_profit         
-            #return total_expected_profit
-    '''
-    if mode == 3: #3串4
-        total_expected_profit1 = profit_expectation(df_score_probability, df_win_lose_probability,games,1)
-        total_expected_profit2 = profit_expectation(df_score_probability, df_win_lose_probability,games,2)
-        total_expected_profit = total_expected_profit1 + total_expected_profit2
-        print total_expected_profit
-        return total_expected_profit
-    '''
-    
-if __name__ == "__main__":    
-    '''
-    namelist = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga','German_Bundesliga','France_Ligue_one',
-    'J_League','K_League','France_Ligue_two','German_B']  
-    '''
-    namelist = ['English_Premier_League','Italy_Serie_A','Spanish_La_Liga','German_Bundesliga','France_Ligue_one','Japanese']
-
-    mode = 1
-    advantages_index = {}
-    mean_host_win = {}
-    mean_guest_win = {}
-    hit_lose_ball = {}
-    expected_host_ball_set = {}
-    expected_guest_ball_set = {}
-    df_score_probability = {}
-    df_win_lose_probability = {}
-    finished_matches = {}
-    correct_ratio = {}
-    count = {}
-    for i, name in enumerate(namelist):
-        df = data_league(name)
-        advantages_index[name],mean_host_win[name],mean_guest_win[name],hit_lose_ball[name] = data_analysis(df,name)
-        expected_host_ball_set[name], expected_guest_ball_set[name] = expected_hitball_number(advantages_index[name],mean_host_win[name],mean_guest_win[name])
-        df_score_probability[name], df_win_lose_probability[name] = ballprobability(expected_host_ball_set[name],expected_guest_ball_set[name]) 
-        finished_matches[name] = get_data("SELECT * FROM %s_recent_matches"%name)
-        correct_ratio[name],count[name] = calculate_correct_ratio(finished_matches[name], df_win_lose_probability[name],df_score_probability[name], mode)
-    today_match_csv = 'C:/Users/Administrator/Desktop/yingchao_season_score/jingcai_today_data_new.csv'    
-    today_matches_fiveLeague = Filter_today_matches(today_match_csv)
-    df_expected_profit_set = profit_expectation(df_score_probability, df_win_lose_probability,today_matches_fiveLeague,1)

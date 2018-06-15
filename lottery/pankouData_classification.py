@@ -227,11 +227,11 @@ if __name__ == "__main__":
     today_matches['odd_result'] = 2
     for i in range(len(today_matches)):
         if y[i] == 1:
-            today_matches['odd_result'].ix[i] = 'win'
+            today_matches['odd_result'].ix[i] = u'胜'
         if y[i] == 0:
-            today_matches['odd_result'].ix[i] = 'draw'
+            today_matches['odd_result'].ix[i] = u'平'
         if y[i] == -1:
-            today_matches['odd_result'].ix[i] = 'lose'
+            today_matches['odd_result'].ix[i] = u'负'
     today_matches.to_csv('C:/Users/Administrator/Desktop/yingchao_season_score/jingcai_today_data_new.csv',encoding='gbk')
     
 

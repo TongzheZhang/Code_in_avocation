@@ -22,18 +22,18 @@ from sqlalchemy.types import NVARCHAR, Float, Integer
 
 driver = webdriver.PhantomJS(executable_path = 'D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe')    
 
-'''
+
 year = 2018
 urllist = ['http://www.okooo.com/soccer/league/295/schedule/12240/']
-'''
+
 '''
 year = 2014
 urllist = ['http://www.okooo.com/soccer/league/295/schedule/3554/']
 '''
-
+'''
 year = 2010
 urllist = ['http://www.okooo.com/soccer/league/295/schedule/984/']
-
+'''
 
 name = ['Precentral_South_America']    
 
@@ -85,7 +85,7 @@ for j,url in enumerate(urllist):
       'draw': Integer(),
       'lose': Integer(),
       'goals_scored': Integer(),
-      'goal_against': Integer(),
+      'goals_against': Integer(),
       'goals_net': Integer(),
 
       'host_game_num': Integer(),
@@ -104,5 +104,5 @@ for j,url in enumerate(urllist):
     }
     
     yconnect = create_engine('mysql+mysqldb://root:@127.0.0.1:3306/zucai?charset=utf8') 
-    pd.io.sql.to_sql(df_symbols, name[j]+str(year), yconnect, schema='zucai', if_exists='append',dtype=dtypedict)  
+    pd.io.sql.to_sql(df_symbols, name[j]+str(year), yconnect, schema='zucai', if_exists='replace',dtype=dtypedict)  
 

@@ -19,7 +19,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.types import NVARCHAR, Float, Integer
 
 driver = webdriver.PhantomJS(executable_path = 'D:\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe')    
-'''
+
 year = 2018
 urllist_set = [['http://www.okooo.com/soccer/league/308/schedule/12033/2-7238/',
            'http://www.okooo.com/soccer/league/308/schedule/12033/2-7239/',
@@ -47,7 +47,7 @@ urllist_set = [['http://www.okooo.com/soccer/league/308/schedule/12033/2-7238/',
             'http://www.okooo.com/soccer/league/14/schedule/12022/2-38900/',
             'http://www.okooo.com/soccer/league/14/schedule/12022/2-38898/']
            ]           
-'''
+
 '''
 year = 2014
 urllist_set = [['http://www.okooo.com/soccer/league/308/schedule/3319/2-7238/',
@@ -76,10 +76,18 @@ urllist_set = [['http://www.okooo.com/soccer/league/308/schedule/3319/2-7238/',
             'http://www.okooo.com/soccer/league/13/schedule/3877/2-7252/'],
             ['http://www.okooo.com/soccer/league/14/schedule/3358/3-8514/',
             'http://www.okooo.com/soccer/league/14/schedule/3358/3-8515/',
-            'http://www.okooo.com/soccer/league/14/schedule/3358/3-8516/']
+            'http://www.okooo.com/soccer/league/14/schedule/3358/3-8516/'],
+            ['http://www.okooo.com/soccer/league/16/schedule/11689/1-3954/',
+           'http://www.okooo.com/soccer/league/16/schedule/11689/1-3955/',
+           'http://www.okooo.com/soccer/league/16/schedule/11689/1-3956/',
+           'http://www.okooo.com/soccer/league/16/schedule/11689/1-3957/',
+           'http://www.okooo.com/soccer/league/16/schedule/11689/1-3958/',
+           'http://www.okooo.com/soccer/league/16/schedule/11689/1-3959/',
+           'http://www.okooo.com/soccer/league/16/schedule/11689/1-3960/',
+           'http://www.okooo.com/soccer/league/16/schedule/11689/1-3961/']
            ]  
 '''
-
+'''
 year = 2010
 urllist_set = [['http://www.okooo.com/soccer/league/308/schedule/1000/2-7238/',
            'http://www.okooo.com/soccer/league/308/schedule/1000/2-7239/',
@@ -107,12 +115,20 @@ urllist_set = [['http://www.okooo.com/soccer/league/308/schedule/1000/2-7238/',
             'http://www.okooo.com/soccer/league/13/schedule/1002/2-7252/'],
             ['http://www.okooo.com/soccer/league/14/schedule/1154/2-8514/',
             'http://www.okooo.com/soccer/league/14/schedule/1154/2-8515/',
-            'http://www.okooo.com/soccer/league/14/schedule/1154/2-8516/']
+            'http://www.okooo.com/soccer/league/14/schedule/1154/2-8516/'],
+            ['http://www.okooo.com/soccer/league/16/schedule/2531/1-3954/',
+           'http://www.okooo.com/soccer/league/16/schedule/2531/1-3955/',
+           'http://www.okooo.com/soccer/league/16/schedule/2531/1-3956/',
+           'http://www.okooo.com/soccer/league/16/schedule/2531/1-3957/',
+           'http://www.okooo.com/soccer/league/16/schedule/2531/1-3958/',
+           'http://www.okooo.com/soccer/league/16/schedule/2531/1-3959/',
+           'http://www.okooo.com/soccer/league/16/schedule/2531/1-3960/',
+           'http://www.okooo.com/soccer/league/16/schedule/2531/1-3961/']
            ]  
 
-        
+'''        
            
-name = ['Precentral_Asia','Precentral_Europe','Precentral_Africa','Precentral_North_America']    
+name = ['Precentral_Asia','Precentral_Europe','Precentral_Africa','Precentral_North_America','World_Cup']    
 
 for j,urllist in enumerate(urllist_set):
     for url in urllist:
@@ -163,7 +179,7 @@ for j,urllist in enumerate(urllist_set):
           'draw': Integer(),
           'lose': Integer(),
           'goals_scored': Integer(),
-          'goal_against': Integer(),
+          'goals_against': Integer(),
           'goals_net': Integer(),
     
           'host_game_num': Integer(),
@@ -182,5 +198,5 @@ for j,urllist in enumerate(urllist_set):
         }
         
         yconnect = create_engine('mysql+mysqldb://root:@127.0.0.1:3306/zucai?charset=utf8') 
-        pd.io.sql.to_sql(df_symbols, name[j]+str(year), yconnect, schema='zucai', if_exists='append',dtype=dtypedict)  
+        pd.io.sql.to_sql(df_symbols, name[j]+str(year), yconnect, schema='zucai', if_exists='replace',dtype=dtypedict)  
     
